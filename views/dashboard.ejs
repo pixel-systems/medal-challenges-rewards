@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Medal Challenges</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/dashboard" class="nav-brand">🏅 Medal Challenges</a>
+      <div class="nav-menu">
+        <a href="/activities" class="nav-link">Activities</a>
+        <div class="nav-user">
+          <img src="<%= user.avatar %>" alt="<%= user.name %>" class="user-avatar">
+          <span><%= user.name %></span>
+          <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="dashboard">
+      <h1>Dashboard</h1>
+      
+      <div class="connections">
+        <h2>Connected Apps</h2>
+        
+        <div class="connection-card">
+          <div class="connection-info">
+            <h3>🚴 Strava</h3>
+            <% if (user.stravaConnected) { %>
+              <p class="status connected">✓ Connected</p>
+            <% } else { %>
+              <p class="status disconnected">✗ Not Connected</p>
+            <% } %>
+          </div>
+          <div class="connection-actions">
+            <% if (user.stravaConnected) { %>
+              <button onclick="syncStrava()" class="btn btn-primary">Sync Activities</button>
+              <a href="/auth/strava/disconnect" class="btn btn-secondary">Disconnect</a>
+            <% } else { %>
+              <a href="/auth/strava" class="btn btn-primary">Connect Strava</a>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="connection-card">
+          <div class="connection-info">
+            <h3>⌚ Garmin Connect</h3>
+            <% if (user.garminConnected) { %>
+              <p class="status connected">✓ Connected</p>
+            <% } else { %>
+              <p class="status disconnected">✗ Not Connected</p>
+            <% } %>
+          </div>
+          <div class="connection-actions">
+            <% if (user.garminConnected) { %>
+              <button onclick="syncGarmin()" class="btn btn-primary">Sync Activities</button>
+              <a href="/auth/garmin/disconnect" class="btn btn-secondary">Disconnect</a>
+            <% } else { %>
+              <a href="/auth/garmin" class="btn btn-primary" onclick="alert('Garmin Connect integration requires special API access approval from Garmin. This feature is coming soon!'); return false;">Connect Garmin</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <a href="/activities" class="btn btn-large">View All Activities →</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Docker ignore file
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+TESTING.md
+DEPLOYMENT.md
+.dynamodb
+.vscode
+coverage
+*.md
