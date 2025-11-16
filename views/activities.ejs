@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activities - Medal Challenges</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/dashboard" class="nav-brand">🏅 Medal Challenges</a>
+      <div class="nav-menu">
+        <a href="/activities" class="nav-link active">Activities</a>
+        <div class="nav-user">
+          <img src="<%= user.avatar %>" alt="<%= user.name %>" class="user-avatar">
+          <span><%= user.name %></span>
+          <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="activities-page">
+      <h1>My Activities</h1>
+
+      <div class="filters">
+        <form method="GET" action="/activities" class="filter-form">
+          <div class="filter-group">
+            <label for="source">Fitness App:</label>
+            <select name="source" id="source" onchange="this.form.submit()">
+              <option value="">All Apps</option>
+              <option value="strava" <%= selectedSource === 'strava' ? 'selected' : '' %>>Strava</option>
+              <option value="garmin" <%= selectedSource === 'garmin' ? 'selected' : '' %>>Garmin</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="type">Activity Type:</label>
+            <select name="type" id="type" onchange="this.form.submit()">
+              <option value="">All Types</option>
+              <!-- Activity types will be populated dynamically -->
+            </select>
+          </div>
+
+          <% if (selectedType || selectedSource) { %>
+            <a href="/activities" class="btn btn-secondary">Clear Filters</a>
+          <% } %>
+        </form>
+      </div>
+
+      <div class="activities-list">
+        <% if (activities.length === 0) { %>
+          <div class="empty-state">
+            <p>No activities found. Connect your Strava or Garmin account and sync your activities!</p>
+            <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+          </div>
+        <% } else { %>
+          <% activities.forEach(activity => { %>
+            <div class="activity-card">
+              <div class="activity-header">
+                <h3><%= activity.name %></h3>
+                <span class="activity-source <%= activity.source %>"><%= activity.source %></span>
+              </div>
+              <div class="activity-details">
+                <div class="detail">
+                  <span class="label">Type:</span>
+                  <span class="value"><%= activity.type %></span>
+                </div>
+                <div class="detail">
+                  <span class="label">Date:</span>
+                  <span class="value"><%= new Date(activity.startDate).toLocaleDateString() %></span>
+                </div>
+                <% if (activity.distance) { %>
+                  <div class="detail">
+                    <span class="label">Distance:</span>
+                    <span class="value"><%= (activity.distance / 1000).toFixed(2) %> km</span>
+                  </div>
+                <% } %>
+                <% if (activity.movingTime) { %>
+                  <div class="detail">
+                    <span class="label">Duration:</span>
+                    <span class="value"><%= formatDuration(activity.movingTime) %></span>
+                  </div>
+                <% } %>
+                <% if (activity.averageSpeed) { %>
+                  <div class="detail">
+                    <span class="label">Avg Speed:</span>
+                    <span class="value"><%= (activity.averageSpeed * 3.6).toFixed(2) %> km/h</span>
+                  </div>
+                <% } %>
+                <% if (activity.calories) { %>
+                  <div class="detail">
+                    <span class="label">Calories:</span>
+                    <span class="value"><%= activity.calories %></span>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/activities.js"></script>
+</body>
+</html>
+
+<%
+function formatDuration(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${secs}s`;
+  } else {
+    return `${secs}s`;
+  }
+}
+%>
