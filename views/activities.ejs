@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Activities - Medal Challenges</title>
+  <title>Activities - TrailToTrophy</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <nav class="navbar">
     <div class="nav-container">
-      <a href="/dashboard" class="nav-brand">🏅 Medal Challenges</a>
+      <a href="/dashboard" class="nav-brand">🏅 TrailToTrophy</a>
       <div class="nav-menu">
         <a href="/activities" class="nav-link active">Activities</a>
         <div class="nav-user">
@@ -25,40 +28,15 @@
     <div class="activities-page">
       <h1>My Activities</h1>
 
-      <div class="filters">
-        <form method="GET" action="/activities" class="filter-form">
-          <div class="filter-group">
-            <label for="source">Fitness App:</label>
-            <select name="source" id="source" onchange="this.form.submit()">
-              <option value="">All Apps</option>
-              <option value="strava" <%= selectedSource === 'strava' ? 'selected' : '' %>>Strava</option>
-              <option value="garmin" <%= selectedSource === 'garmin' ? 'selected' : '' %>>Garmin</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="type">Activity Type:</label>
-            <select name="type" id="type" onchange="this.form.submit()">
-              <option value="">All Types</option>
-              <!-- Activity types will be populated dynamically -->
-            </select>
-          </div>
-
-          <% if (selectedType || selectedSource) { %>
-            <a href="/activities" class="btn btn-secondary">Clear Filters</a>
-          <% } %>
-        </form>
-      </div>
-
-      <div class="activities-list">
+      <div class="activities-list" id="activitiesList">
         <% if (activities.length === 0) { %>
           <div class="empty-state">
-            <p>No activities found. Connect your Strava or Garmin account and sync your activities!</p>
+            <p>No activities found. Connect your Strava account and sync your activities!</p>
             <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
           </div>
         <% } else { %>
           <% activities.forEach(activity => { %>
-            <div class="activity-card">
+            <div class="activity-card" data-activity-id="<%= activity._id %>" style="cursor: pointer;">
               <div class="activity-header">
                 <h3><%= activity.name %></h3>
                 <span class="activity-source <%= activity.source %>"><%= activity.source %></span>
@@ -96,10 +74,82 @@
                     <span class="value"><%= activity.calories %></span>
                   </div>
                 <% } %>
+                <% if (activity.kudosCount !== undefined && activity.kudosCount > 0) { %>
+                  <div class="detail">
+                    <span class="label">👍 Kudos:</span>
+                    <span class="value"><%= activity.kudosCount %></span>
+                  </div>
+                <% } %>
               </div>
             </div>
           <% }); %>
         <% } %>
+      </div>
+
+      <% if (pagination && pagination.hasMore) { %>
+        <div class="load-more-container">
+          <button id="loadMoreBtn" class="btn btn-large">Load More Activities</button>
+          <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <span>Loading...</span>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (pagination) { %>
+        <div class="pagination-info">
+          <p>Showing <%= activities.length %> of <%= pagination.total %> activities</p>
+        </div>
+        <script>
+          // Pass pagination data to JavaScript
+          document.addEventListener('DOMContentLoaded', function() {
+            const paginationData = document.createElement('div');
+            paginationData.setAttribute('data-pagination', JSON.stringify({
+              page: <%= pagination.page %>,
+              limit: <%= pagination.limit %>,
+              total: <%= pagination.total %>,
+              hasMore: <%= pagination.hasMore %>
+            }));
+            paginationData.style.display = 'none';
+            document.body.appendChild(paginationData);
+          });
+        </script>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Activity Details Modal -->
+  <div id="activityModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalActivityName">Activity Details</h2>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body" id="modalActivityBody">
+        <div class="loading-spinner">Loading activity details...</div>
+      </div>
+      <div id="activityMapContainer" style="display: none; margin-top: 0;">
+        <div id="activityMap" style="height: 400px; width: 100%; border-radius: 0 0 15px 15px; z-index: 1;"></div>
+      </div>
+      <div id="activityChartsContainer" style="display: none; margin-top: 1rem; padding: 1.5rem;">
+        <h3 style="margin-bottom: 1.5rem; color: #667eea;">Activity Charts</h3>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h4>Pace</h4>
+            <canvas id="paceChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>GAP (Grade Adjusted Pace)</h4>
+            <canvas id="gapChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>Heart Rate</h4>
+            <canvas id="heartrateChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>Cadence</h4>
+            <canvas id="cadenceChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>

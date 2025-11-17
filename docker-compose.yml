@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=3000
       - MONGODB_URI=mongodb://mongo:27017/medal-challenges
       - SESSION_SECRET=${SESSION_SECRET:-change-this-secret-in-production}
