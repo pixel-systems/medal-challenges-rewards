@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strava Profile - TrailToTrophy</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/dashboard" class="nav-brand">🏅 TrailToTrophy</a>
+      <div class="nav-menu">
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/activities" class="nav-link">Activities</a>
+        <div class="nav-user">
+          <img src="<%= user.avatar %>" alt="<%= user.name %>" class="user-avatar">
+          <span><%= user.name %></span>
+          <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="strava-profile-page">
+      <h1>🚴 Strava Profile</h1>
+      
+      <% if (!athlete) { %>
+        <div class="error-message">
+          <h2>Error: Could not load Strava profile</h2>
+          <p>Please try again or reconnect your Strava account.</p>
+          <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+        </div>
+      <% } else { %>
+        <div class="athlete-profile-card">
+          <div class="athlete-header">
+            <div class="athlete-avatar">
+              <% if (athlete.profile) { %>
+                <img src="<%= athlete.profile %>" alt="<%= athlete.firstname %> <%= athlete.lastname %>">
+              <% } else { %>
+                <div class="avatar-placeholder">🚴</div>
+              <% } %>
+            </div>
+            <div class="athlete-info">
+              <h2><%= athlete.firstname %> <%= athlete.lastname %></h2>
+              <% if (athlete.city || athlete.state || athlete.country) { %>
+                <p class="athlete-location">
+                  📍 <%= [athlete.city, athlete.state, athlete.country].filter(Boolean).join(', ') %>
+                </p>
+              <% } %>
+              <% if (athlete.bio) { %>
+                <p class="athlete-bio"><%= athlete.bio %></p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="athlete-details-grid">
+            <div class="detail-card">
+              <div class="detail-icon">🆔</div>
+              <div class="detail-content">
+                <span class="detail-label">Strava ID</span>
+                <span class="detail-value"><%= athlete.id %></span>
+              </div>
+            </div>
+
+            <% if (athlete.username) { %>
+              <div class="detail-card">
+                <div class="detail-icon">👤</div>
+                <div class="detail-content">
+                  <span class="detail-label">Username</span>
+                  <span class="detail-value">@<%= athlete.username %></span>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (athlete.sex) { %>
+              <div class="detail-card">
+                <div class="detail-icon">⚧️</div>
+                <div class="detail-content">
+                  <span class="detail-label">Gender</span>
+                  <span class="detail-value"><%= athlete.sex === 'M' ? 'Male' : athlete.sex === 'F' ? 'Female' : athlete.sex %></span>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (athlete.weight) { %>
+              <div class="detail-card">
+                <div class="detail-icon">⚖️</div>
+                <div class="detail-content">
+                  <span class="detail-label">Weight</span>
+                  <span class="detail-value"><%= athlete.weight %> kg</span>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (athlete.created_at) { %>
+              <div class="detail-card">
+                <div class="detail-icon">📅</div>
+                <div class="detail-content">
+                  <span class="detail-label">Member Since</span>
+                  <span class="detail-value"><%= new Date(athlete.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (athlete.follower_count !== undefined) { %>
+              <div class="detail-card">
+                <div class="detail-icon">👥</div>
+                <div class="detail-content">
+                  <span class="detail-label">Followers</span>
+                  <span class="detail-value"><%= athlete.follower_count %></span>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (athlete.friend_count !== undefined) { %>
+              <div class="detail-card">
+                <div class="detail-icon">🤝</div>
+                <div class="detail-content">
+                  <span class="detail-label">Following</span>
+                  <span class="detail-value"><%= athlete.friend_count %></span>
+                </div>
+              </div>
+            <% } %>
+          </div>
+
+          <% if (stats) { %>
+            <div class="stats-section">
+              <h3>Activity Statistics</h3>
+              <div class="stats-grid">
+                <% if (stats.all_ride_totals) { %>
+                  <div class="stat-card">
+                    <h4>🚴 All Time Rides</h4>
+                    <div class="stat-details">
+                      <div class="stat-item">
+                        <span class="stat-label">Distance:</span>
+                        <span class="stat-value"><%= (stats.all_ride_totals.distance / 1000).toFixed(2) %> km</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value"><%= formatDuration(stats.all_ride_totals.moving_time) %></span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Elevation:</span>
+                        <span class="stat-value"><%= (stats.all_ride_totals.elevation_gain || 0).toFixed(0) %> m</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Activities:</span>
+                        <span class="stat-value"><%= stats.all_ride_totals.count || 0 %></span>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+
+                <% if (stats.all_run_totals) { %>
+                  <div class="stat-card">
+                    <h4>🏃 All Time Runs</h4>
+                    <div class="stat-details">
+                      <div class="stat-item">
+                        <span class="stat-label">Distance:</span>
+                        <span class="stat-value"><%= (stats.all_run_totals.distance / 1000).toFixed(2) %> km</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value"><%= formatDuration(stats.all_run_totals.moving_time) %></span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Elevation:</span>
+                        <span class="stat-value"><%= (stats.all_run_totals.elevation_gain || 0).toFixed(0) %> m</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Activities:</span>
+                        <span class="stat-value"><%= stats.all_run_totals.count || 0 %></span>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+
+                <% if (stats.all_swim_totals) { %>
+                  <div class="stat-card">
+                    <h4>🏊 All Time Swims</h4>
+                    <div class="stat-details">
+                      <div class="stat-item">
+                        <span class="stat-label">Distance:</span>
+                        <span class="stat-value"><%= (stats.all_swim_totals.distance / 1000).toFixed(2) %> km</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value"><%= formatDuration(stats.all_swim_totals.moving_time) %></span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Activities:</span>
+                        <span class="stat-value"><%= stats.all_swim_totals.count || 0 %></span>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+
+                <% if (stats.biggest_ride_distance) { %>
+                  <div class="stat-card">
+                    <h4>🏆 Personal Records</h4>
+                    <div class="stat-details">
+                      <div class="stat-item">
+                        <span class="stat-label">Longest Ride:</span>
+                        <span class="stat-value"><%= (stats.biggest_ride_distance / 1000).toFixed(2) %> km</span>
+                      </div>
+                      <% if (stats.biggest_climb_elevation_gain) { %>
+                        <div class="stat-item">
+                          <span class="stat-label">Biggest Climb:</span>
+                          <span class="stat-value"><%= stats.biggest_climb_elevation_gain.toFixed(0) %> m</span>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+
+          <% if (zones) { %>
+            <div class="zones-section">
+              <h3>Training Zones</h3>
+              <div class="zones-grid">
+                <% if (zones.heart_rate && zones.heart_rate.zones && zones.heart_rate.zones.length > 0) { %>
+                  <div class="zone-card">
+                    <h4>❤️ Heart Rate Zones</h4>
+                    <% if (zones.heart_rate.custom_zones) { %>
+                      <p class="zone-note">Custom zones configured</p>
+                    <% } else { %>
+                      <p class="zone-note">Default zones (based on max heart rate)</p>
+                    <% } %>
+                    <div class="zone-list">
+                      <% zones.heart_rate.zones.forEach((zone, index) => { %>
+                        <div class="zone-item">
+                          <div class="zone-number">Zone <%= index + 1 %></div>
+                          <div class="zone-range">
+                            <% if (zone.min !== undefined && zone.max !== undefined) { %>
+                              <%= zone.min %> - <%= zone.max %> bpm
+                            <% } else if (zone.min !== undefined) { %>
+                              <%= zone.min %>+ bpm
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </div>
+                        </div>
+                      <% }); %>
+                    </div>
+                  </div>
+                <% } %>
+
+                <% if (zones.power && zones.power.zones && zones.power.zones.length > 0) { %>
+                  <div class="zone-card">
+                    <h4>⚡ Power Zones</h4>
+                    <% if (zones.power.custom_zones) { %>
+                      <p class="zone-note">Custom zones configured</p>
+                    <% } else { %>
+                      <p class="zone-note">Default zones (based on FTP)</p>
+                    <% } %>
+                    <div class="zone-list">
+                      <% zones.power.zones.forEach((zone, index) => { %>
+                        <div class="zone-item">
+                          <div class="zone-number">Zone <%= index + 1 %></div>
+                          <div class="zone-range">
+                            <% if (zone.min !== undefined && zone.max !== undefined) { %>
+                              <%= zone.min %> - <%= zone.max %> W
+                            <% } else if (zone.min !== undefined) { %>
+                              <%= zone.min %>+ W
+                            <% } else { %>
+                              N/A
+                            <% } %>
+                          </div>
+                        </div>
+                      <% }); %>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+
+          <div class="profile-actions">
+            <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            <button id="syncStravaBtnProfile" class="btn btn-primary">Sync Activities</button>
+            <a href="/activities" class="btn btn-primary">View Activities</a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
+
+<%
+function formatDuration(seconds) {
+  if (!seconds) return '0s';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${secs}s`;
+  } else {
+    return `${secs}s`;
+  }
+}
+%>
+

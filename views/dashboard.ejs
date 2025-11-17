@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Medal Challenges</title>
+  <title>Dashboard - TrailToTrophy</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <nav class="navbar">
     <div class="nav-container">
-      <a href="/dashboard" class="nav-brand">🏅 Medal Challenges</a>
+      <a href="/dashboard" class="nav-brand">🏅 TrailToTrophy</a>
       <div class="nav-menu">
         <a href="/activities" class="nav-link">Activities</a>
         <div class="nav-user">
@@ -23,8 +23,43 @@
 
   <div class="container">
     <div class="dashboard">
-      <h1>Dashboard</h1>
+      <% if (!user) { %>
+        <div class="error-message">
+          <h2>Error: User data not available</h2>
+          <p>Please try logging in again.</p>
+          <a href="/logout" class="btn btn-primary">Logout and Try Again</a>
+        </div>
+      <% } else { %>
+      <h1>Welcome, <%= user.name ? user.name.split(' ')[0] : 'User' %>!</h1>
       
+      <div class="user-info-section">
+        <div class="user-profile-card">
+          <div class="user-avatar-large">
+            <img src="<%= user.avatar %>" alt="<%= user.name %>">
+          </div>
+          <div class="user-details">
+            <h2><%= user.name %></h2>
+            <div class="user-detail-item">
+              <span class="detail-icon">📧</span>
+              <span class="detail-label">Email:</span>
+              <span class="detail-value"><%= user.email %></span>
+            </div>
+            <% if (user.createdAt) { %>
+              <div class="user-detail-item">
+                <span class="detail-icon">📅</span>
+                <span class="detail-label">Member since:</span>
+                <span class="detail-value"><%= new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+              </div>
+            <% } %>
+            <div class="user-detail-item">
+              <span class="detail-icon">🔐</span>
+              <span class="detail-label">Login method:</span>
+              <span class="detail-value">Google OAuth</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="connections">
         <h2>Connected Apps</h2>
         
@@ -39,29 +74,11 @@
           </div>
           <div class="connection-actions">
             <% if (user.stravaConnected) { %>
-              <button onclick="syncStrava()" class="btn btn-primary">Sync Activities</button>
+              <a href="/dashboard/strava-profile" class="btn btn-primary">View Strava Profile</a>
+              <button id="syncStravaBtn" class="btn btn-primary">Sync Activities</button>
               <a href="/auth/strava/disconnect" class="btn btn-secondary">Disconnect</a>
             <% } else { %>
               <a href="/auth/strava" class="btn btn-primary">Connect Strava</a>
-            <% } %>
-          </div>
-        </div>
-
-        <div class="connection-card">
-          <div class="connection-info">
-            <h3>⌚ Garmin Connect</h3>
-            <% if (user.garminConnected) { %>
-              <p class="status connected">✓ Connected</p>
-            <% } else { %>
-              <p class="status disconnected">✗ Not Connected</p>
-            <% } %>
-          </div>
-          <div class="connection-actions">
-            <% if (user.garminConnected) { %>
-              <button onclick="syncGarmin()" class="btn btn-primary">Sync Activities</button>
-              <a href="/auth/garmin/disconnect" class="btn btn-secondary">Disconnect</a>
-            <% } else { %>
-              <a href="/auth/garmin" class="btn btn-primary" onclick="alert('Garmin Connect integration requires special API access approval from Garmin. This feature is coming soon!'); return false;">Connect Garmin</a>
             <% } %>
           </div>
         </div>
@@ -70,6 +87,7 @@
       <div class="quick-actions">
         <a href="/activities" class="btn btn-large">View All Activities →</a>
       </div>
+      <% } %>
     </div>
   </div>
 
