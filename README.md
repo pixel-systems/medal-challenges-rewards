@@ -19,14 +19,112 @@ A fitness tracking web application that allows users to connect their Strava and
 - **Frontend**: EJS templates with vanilla JavaScript
 - **APIs**: Strava API v3
 
-## Prerequisites
+## Quick Start (Local Development)
+
+The easiest way to get started is using Docker Compose, which sets up both the application and MongoDB automatically.
+
+### Prerequisites Installation
+
+#### macOS
+```bash
+# Install Docker Desktop
+brew install --cask docker
+
+# Or download from: https://www.docker.com/products/docker-desktop
+
+# Install Homebrew (if not already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Install Docker
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
+
+# Add your user to docker group (to run without sudo)
+sudo usermod -aG docker $USER
+# Log out and log back in for changes to take effect
+```
+
+#### Windows
+- Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
+- Ensure WSL 2 is enabled
+
+### Quick Start Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/pixel-systems/medal-challenges-rewards.git
+   cd medal-challenges-rewards
+   ```
+
+2. **Create environment file**
+   ```bash
+   # Create .env file with your OAuth credentials
+   cat > .env << EOF
+   NODE_ENV=development
+   PORT=3000
+   SESSION_SECRET=$(openssl rand -hex 32)
+   MONGODB_URI=mongodb://mongo:27017/medal-challenges
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+   STRAVA_CLIENT_ID=your-strava-client-id
+   STRAVA_CLIENT_SECRET=your-strava-client-secret
+   STRAVA_CALLBACK_URL=http://localhost:3000/auth/strava/callback
+   EOF
+   ```
+   
+   > **Note**: See [OAuth Credentials Setup](#obtain-oauth-credentials) below for instructions on obtaining these credentials.
+
+3. **Start the application**
+   ```bash
+   docker-compose up --build
+   ```
+
+4. **Access the application**
+   - Open your browser and navigate to: `http://localhost:3000`
+   - The MongoDB database is automatically available at `localhost:27017`
+
+### Useful Docker Commands
+
+```bash
+# Start in background (detached mode)
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+
+# Stop and remove volumes (clean database)
+docker-compose down -v
+
+# Rebuild after code changes
+docker-compose up --build
+
+# Restart a specific service
+docker-compose restart app
+```
+
+### Troubleshooting
+
+- **Port already in use**: If port 3000 or 27017 is already in use, modify the ports in `docker-compose.yml`
+- **Docker not running**: Ensure Docker Desktop is running (macOS/Windows) or Docker daemon is running (Linux)
+- **Permission denied**: On Linux, ensure your user is in the docker group (see Prerequisites above)
+
+## Prerequisites (Manual Setup)
 
 - Node.js (v14 or higher)
 - MongoDB (local or cloud instance)
 - Google OAuth2 credentials
 - Strava API credentials
 
-## Setup Instructions
+## Manual Setup Instructions (Without Docker)
+
+If you prefer to run the application without Docker, follow these steps:
 
 ### 1. Clone the Repository
 
@@ -43,13 +141,32 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Copy the example environment file and configure it:
+Create a `.env` file in the root directory:
 
 ```bash
-cp .env.example .env
+# Create .env file
+cat > .env << EOF
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+SESSION_SECRET=$(openssl rand -hex 32)
+
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/medal-challenges
+
+# Google OAuth2
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+# Strava OAuth2
+STRAVA_CLIENT_ID=your-strava-client-id
+STRAVA_CLIENT_SECRET=your-strava-client-secret
+STRAVA_CALLBACK_URL=http://localhost:3000/auth/strava/callback
+EOF
 ```
 
-Edit `.env` and add your credentials:
+Or manually create `.env` and add your credentials:
 
 ```env
 # Server Configuration
@@ -96,7 +213,9 @@ STRAVA_CALLBACK_URL=http://localhost:3000/auth/strava/callback
 
 ### 5. Start MongoDB
 
-If using local MongoDB:
+> **Note**: If you're using Docker Compose (recommended), MongoDB is automatically started. Skip this step.
+
+If using local MongoDB (for manual setup):
 
 ```bash
 # On macOS with Homebrew
